@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Title from "../../_components/Title";
-import ReservedCardList from "../../../../features/reservations/components/ReservedCardList";
+import ReservedCardList from "@/features/reservations/components/ReservedCardList";
 
 export const metadata: Metadata = {
   title: "예약내역",

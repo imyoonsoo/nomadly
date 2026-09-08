@@ -19,6 +19,9 @@ const getBannerImages = (data: ActivityDetailResponse) => {
   ];
 };
 
+const truncate = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max)}…` : text;
+
 export const generateMetadata = async ({
   params,
 }: {
@@ -26,21 +29,35 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   try {
     const { id } = await params;
-    const activity = await getActivityDetail({ activityId: Number(id) });
+    const activityId = Number(id);
+
+    if (Number.isNaN(activityId)) {
+      return {};
+    }
+
+    const activity = await getActivityDetail({ activityId });
+    const description = truncate(activity.description, 100);
 
     return {
       title: activity.title,
-      description: activity.description,
+      description,
       openGraph: {
         type: "website",
         siteName: SITE_NAME,
         locale: "ko_KR",
         title: activity.title,
-        description: activity.description,
+        description,
+        images: [activity.bannerImageUrl],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: activity.title,
+        description,
         images: [activity.bannerImageUrl],
       },
     };
-  } catch {
+  } catch (error) {
+    console.error("[ActivityDetail] 메타데이터를 생성하지 못했습니다.", error);
     return {};
   }
 };
