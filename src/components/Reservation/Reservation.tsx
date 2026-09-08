@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Skeleton from "@/components/Skeleton/Skeleton";
 import { Minus, Plus, Search } from "@/constants/icons";
-import Calendar from "./Calendar";
+import { Calendar } from "./Calendar";
 import type { ReservationProps } from "./type";
 import useAvailableReservationSchedules from "@/hooks/useAvailableReservationSchedules";
 import {
@@ -157,7 +157,7 @@ const Reservation = ({
       <div className="flex flex-col gap-2">
         <h3 className="text-16-bold text-gray-950">날짜</h3>
         <Calendar
-          selectedTimestamp={selectedTimestamp}
+          selectedTimestamp={new Set([selectedTimestamp])}
           selectedYearAndMonth={selectedYearAndMonth}
           selectableDateKeys={selectableDateKeys}
           onSelectTimestamp={handleSelectTimestamp}
