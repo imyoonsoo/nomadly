@@ -8,7 +8,6 @@ import {
   OG_IMAGE,
   SITE_DESCRIPTION,
   SITE_NAME,
-  SITE_TITLE,
   SITE_URL,
 } from "@/constants/site";
 
@@ -21,7 +20,7 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: SITE_TITLE,
+    default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -40,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    title: SITE_TITLE,
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
     siteName: SITE_NAME,
     locale: "ko_KR",
@@ -48,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_TITLE,
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: [OG_IMAGE.url],
   },

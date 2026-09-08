@@ -1,4 +1,5 @@
-﻿import { notFound } from "next/navigation";
+﻿import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ReviewSection from "@/features/activities/components/ReviewSection/ReviewSection";
 import BannerImageSection from "@/features/activities/components/BannerImageSection/BannerImageSection";
 import TitleSection from "@/features/activities/components/TitleSection/TitleSection";
@@ -9,12 +10,39 @@ import MobileReservationFooter from "@/features/activities/components/MobileRese
 import TabletReservationFooter from "@/features/activities/components/TabletReservationFooter/TabletReservationFooter";
 import { getActivityDetail } from "@/features/activities/api/api";
 import type { ActivityDetailResponse } from "@/features/activities/type";
+import { SITE_NAME } from "@/constants/site";
 
 const getBannerImages = (data: ActivityDetailResponse) => {
   return [
     data.bannerImageUrl,
     ...data.subImages.map((image) => image.imageUrl),
   ];
+};
+
+export const generateMetadata = async ({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> => {
+  try {
+    const { id } = await params;
+    const activity = await getActivityDetail({ activityId: Number(id) });
+
+    return {
+      title: activity.title,
+      description: activity.description,
+      openGraph: {
+        type: "website",
+        siteName: SITE_NAME,
+        locale: "ko_KR",
+        title: activity.title,
+        description: activity.description,
+        images: [activity.bannerImageUrl],
+      },
+    };
+  } catch {
+    return {};
+  }
 };
 
 const ActivitiesPage = async ({
