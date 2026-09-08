@@ -20,7 +20,7 @@ import FormSelectDropdown from "./FormSelectDropdown";
 import FormMultiImageInput from "./FormMultiImageInput";
 import FormPriceInput from "./FormPriceInput";
 import AddressSearchButton from "./AddressSearchButton";
-import ScheduleSection from "./ScheduleSection";
+import { ScheduleSection } from "./ScheduleSection";
 
 interface ActivityFormProps {
   mode: "create" | "edit";

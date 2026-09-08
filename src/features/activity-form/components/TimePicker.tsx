@@ -1,36 +1,41 @@
 import { ReactNode } from "react";
 import SelectDropdown from "@/components/SelectDropdown/SelectDropdown";
+import { TIME_OPTIONS } from "@/features/activity-form/utils";
 
 interface TimePickerProps {
   value: string;
   onChange: (value: string) => void;
   label?: string | ReactNode;
   minTime?: string;
+  includeMidnight?: boolean;
 }
 
-const timeOptions = Array.from({ length: 24 }, (_, hour) => {
-  const time = `${hour.toString().padStart(2, "0")}:00`;
+const MIDNIGHT_OPTION = { value: "24:00", label: "24:00" };
 
-  return {
-    value: time,
-    label: time,
-  };
-});
+const TimePicker = ({
+  value,
+  onChange,
+  label,
+  minTime,
+  includeMidnight,
+}: TimePickerProps) => {
+  const base = includeMidnight
+    ? [...TIME_OPTIONS, MIDNIGHT_OPTION]
+    : TIME_OPTIONS;
 
-const TimePicker = ({ value, onChange, label, minTime }: TimePickerProps) => {
   const options = minTime
-    ? timeOptions.filter((option) => option.value > minTime)
-    : timeOptions;
+    ? base.filter((option) => option.value > minTime)
+    : base;
 
   return (
     <SelectDropdown
       options={options}
       selectedValue={value}
-      onChange={(value) => onChange(String(value))}
+      onChange={(val) => onChange(String(val))}
       placeholder="00:00"
       fieldLabel={label}
     />
   );
 };
 
-export default TimePicker;
+export { TimePicker };

@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import BalanceGame from "@/features/recommendation/balance/components/BalanceGame";
 import { Back } from "@/constants/icons";
+
+export const metadata: Metadata = {
+  title: "밸런스 게임",
+};
 
 const BalanceGamePage = () => {
   return (

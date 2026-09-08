@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { Back } from "@/constants/icons";
 import RecommendationTest from "@/features/recommendation/experience/components/RecommendationTest";
 
-import Link from "next/link";
+export const metadata: Metadata = {
+  title: "추천 테스트",
+};
 
 const RecommendationPage = () => {
   return (

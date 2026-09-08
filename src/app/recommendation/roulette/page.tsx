@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import RouletteGame from "@/features/recommendation/roulette/components/Roulette";
 import { Back } from "@/constants/icons";
+
+export const metadata: Metadata = {
+  title: "체험 룰렛",
+};
 
 const RoulettePage = () => {
   return (
