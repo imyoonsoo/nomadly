@@ -15,7 +15,7 @@ import {
 const Calendar = ({
   selectedYearAndMonth,
   selectableDateKeys,
-  selectedTimestamp,
+  selectedTimestamps,
   onChangeYearAndMonth,
   onSelectTimestamp,
 }: CalendarProps) => {
@@ -90,7 +90,7 @@ const Calendar = ({
 
         {calendarTimestamps.map((timestamp) => {
           const dateKey = formatDateKey(timestamp);
-          const isSelected = selectedTimestamp.has(timestamp);
+          const isSelected = selectedTimestamps.has(timestamp);
           const isTodayDate = isToday(timestamp);
           const isCurrentMonthDate = isCurrentMonth(timestamp, month);
           const isSelectable =

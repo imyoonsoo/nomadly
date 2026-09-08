@@ -42,7 +42,7 @@ export interface TabletReservationPickerProps {
 }
 
 export interface CalendarProps {
-  selectedTimestamp: Set<number>;
+  selectedTimestamps: Set<number>;
   selectedYearAndMonth: YearAndMonth;
   selectableDateKeys: Set<string>;
   onSelectTimestamp: (timestamp: number) => void;

@@ -6,14 +6,19 @@ import { Calendar } from "@/components/Reservation/Calendar";
 import {
   formatDateKey,
   formatDisplayDate,
-  getTodayTimestamp as getToday,
-  getYearAndMonthFromTimestamp as getDate,
+  getTodayTimestamp,
+  getYearAndMonthFromTimestamp,
   parseDateKey,
 } from "@/components/Reservation/utils";
 import { YearAndMonth } from "@/components/Reservation/type";
 import { TimePicker } from "./TimePicker";
 import { ActivityFormValues } from "@/features/activity-form/types";
-import { isTimeOverlap } from "@/features/activity-form/utils";
+import {
+  getDateRange,
+  getNextDate,
+  getValidDates,
+  isTimeOverlap,
+} from "@/features/activity-form/utils";
 import { Plus as PlusIcon, Delete as DeleteIcon } from "@/constants/icons";
 import Button from "@/components/Button/Button";
 import FormController from "@/components/Form/FormController";
@@ -24,25 +29,6 @@ interface ScheduleSectionProps {
 }
 
 type ScheduleItem = ActivityFormValues["schedules"][number];
-
-const getNextDate = (date: string) => {
-  const targetDate = new Date(parseDateKey(date));
-  targetDate.setDate(targetDate.getDate() + 1);
-  return formatDateKey(targetDate.getTime());
-};
-
-const getValidDate = () => {
-  const date = new Set<string>();
-  const today = new Date();
-
-  for (let index = 0; index < 365; index++) {
-    const currentDate = new Date(today);
-    currentDate.setDate(today.getDate() + index);
-    date.add(formatDateKey(currentDate.getTime()));
-  }
-
-  return date;
-};
 
 const ScheduleSection = ({
   control,
@@ -97,64 +83,41 @@ const ScheduleSection = ({
     onDuplicateChange?.(isDuplicate);
   }, [isDuplicate, onDuplicateChange]);
 
-  const validDate = useMemo(() => getValidDate(), []);
+  const validDates = useMemo(() => getValidDates(), []);
 
   const [yearMonth, setYearMonth] = useState<YearAndMonth>(() =>
-    getDate(getToday()),
+    getYearAndMonthFromTimestamp(getTodayTimestamp()),
   );
 
-  const [selectedDate, setSelectedDate] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<string | null>(null);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [error, setError] = useState("");
 
-  // s를 붙이지 않은 selectedTimestamp 사용
-  const selectedTimestamp = useMemo(
-    () => new Set(selectedDate.map((date) => parseDateKey(date))),
-    [selectedDate],
+  const selectedTimestamps = useMemo(
+    () => new Set(selectedDates.map((date) => parseDateKey(date))),
+    [selectedDates],
   );
 
-  // 두 날짜 사이의 연속된 날짜 반환
-  const getDateRange = (startDate: string, endDate: string) => {
-    const start = parseDateKey(startDate);
-    const end = parseDateKey(endDate);
-
-    const min = Math.min(start, end);
-    const max = Math.max(start, end);
-
-    const date: string[] = [];
-    const currentDate = new Date(min);
-
-    while (currentDate.getTime() <= max) {
-      const dateKey = formatDateKey(currentDate.getTime());
-      if (validDate.has(dateKey)) {
-        date.push(dateKey);
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return date;
-  };
-
-  const selectedRange = useMemo(() => {
-    const sorted = [...selectedDate].sort();
-    const range: { start: string; end: string }[] = [];
+  const selectedRanges = useMemo(() => {
+    const sorted = [...selectedDates].sort();
+    const ranges: { start: string; end: string }[] = [];
 
     for (const date of sorted) {
-      const lastRange = range[range.length - 1];
+      const lastRange = ranges[ranges.length - 1];
       if (lastRange && getNextDate(lastRange.end) === date) {
         lastRange.end = date;
       } else {
-        range.push({ start: date, end: date });
+        ranges.push({ start: date, end: date });
       }
     }
 
-    return range;
-  }, [selectedDate]);
+    return ranges;
+  }, [selectedDates]);
 
-  const handleRemove = (start: string, end: string) => {
-    setSelectedDate((prev) =>
+  const handleRangeRemove = (start: string, end: string) => {
+    setSelectedDates((prev) =>
       prev.filter((date) => date < start || date > end),
     );
     if (startDate && startDate >= start && startDate <= end) {
@@ -162,36 +125,36 @@ const ScheduleSection = ({
     }
   };
 
-  const handleClick = (timestamp: number) => {
+  const handleCalendarDateClick = (timestamp: number) => {
     const dateStr = formatDateKey(timestamp);
 
     if (startDate) {
-      const date = getDateRange(startDate, dateStr);
-      setSelectedDate((prev) => [...new Set([...prev, ...date])]);
+      const dates = getDateRange(startDate, dateStr, validDates);
+      setSelectedDates((prev) => [...new Set([...prev, ...dates])]);
       setStartDate(null);
       return;
     }
 
-    if (selectedDate.includes(dateStr)) {
-      const range = selectedRange.find(
+    if (selectedDates.includes(dateStr)) {
+      const range = selectedRanges.find(
         (item) => item.start <= dateStr && dateStr <= item.end,
       );
       if (range) {
-        handleRemove(range.start, range.end);
+        handleRangeRemove(range.start, range.end);
       }
       return;
     }
 
     setStartDate(dateStr);
-    setSelectedDate((prev) => [...prev, dateStr]);
+    setSelectedDates((prev) => [...prev, dateStr]);
   };
 
-  const handleReset = () => {
-    setSelectedDate([]);
+  const handleResetButtonClick = () => {
+    setSelectedDates([]);
     setStartDate(null);
   };
 
-  const handleChange = (nextMonth: YearAndMonth) => {
+  const handleCalendarMonthChange = (nextMonth: YearAndMonth) => {
     const now = new Date();
     const isPastMonth =
       nextMonth.year < now.getFullYear() ||
@@ -205,8 +168,8 @@ const ScheduleSection = ({
     setYearMonth(nextMonth);
   };
 
-  const handleAdd = () => {
-    if (selectedDate.length === 0) {
+  const handleAddButtonClick = () => {
+    if (selectedDates.length === 0) {
       setError("날짜를 선택해주세요.");
       return;
     }
@@ -221,8 +184,8 @@ const ScheduleSection = ({
       return;
     }
 
-    const conflictCount = selectedDate.reduce((count, date) => {
-      const overlap = schedules.some(
+    const conflictDates = selectedDates.filter((date) =>
+      schedules.some(
         (schedule) =>
           schedule.date === date &&
           schedule.startTime &&
@@ -233,33 +196,32 @@ const ScheduleSection = ({
             schedule.startTime,
             schedule.endTime,
           ),
-      );
+      ),
+    );
 
-      if (overlap) {
-        return count + 1;
-      }
-
-      append({ date, startTime, endTime });
-      return count;
-    }, 0);
-
-    if (conflictCount === selectedDate.length) {
+    if (conflictDates.length === selectedDates.length) {
       setError("이미 등록된 시간대입니다. 다시 확인해주세요.");
       return;
     }
 
+    const newSchedules = selectedDates
+      .filter((date) => !conflictDates.includes(date))
+      .map((date) => ({ date, startTime, endTime }));
+
+    append(newSchedules);
+
     setError(
-      conflictCount > 0
-        ? `중복된 ${conflictCount}개 날짜를 제외하고 추가했습니다.`
+      conflictDates.length > 0
+        ? `중복된 ${conflictDates.length}개 날짜를 제외하고 추가했습니다.`
         : "",
     );
-    setSelectedDate([]);
+    setSelectedDates([]);
     setStartDate(null);
     setStartTime("");
     setEndTime("");
   };
 
-  const groupedSchedule = useMemo(() => {
+  const groupedSchedules = useMemo(() => {
     const groups = new Map<
       string,
       { index: number; scheduleItem: ScheduleItem }[]
@@ -271,16 +233,16 @@ const ScheduleSection = ({
         return;
       }
 
-      const daySchedule = groups.get(scheduleItem.date) ?? [];
-      daySchedule.push({ index, scheduleItem });
-      groups.set(scheduleItem.date, daySchedule);
+      const daySchedules = groups.get(scheduleItem.date) ?? [];
+      daySchedules.push({ index, scheduleItem });
+      groups.set(scheduleItem.date, daySchedules);
     });
 
     return [...groups.entries()]
       .sort(([firstDate], [secondDate]) => firstDate.localeCompare(secondDate))
-      .map(([date, daySchedule]) => ({
+      .map(([date, daySchedules]) => ({
         date,
-        daySchedule: daySchedule.sort((first, second) =>
+        daySchedules: daySchedules.sort((first, second) =>
           (first.scheduleItem.startTime ?? "").localeCompare(
             second.scheduleItem.startTime ?? "",
           ),
@@ -303,11 +265,11 @@ const ScheduleSection = ({
           <div className="flex flex-col gap-6 rounded-2xl border-2 border-gray-100 p-5 md:flex-row md:gap-8">
             <div className="shrink-0">
               <Calendar
-                selectedTimestamp={selectedTimestamp}
-                onSelectTimestamp={handleClick}
+                selectedTimestamps={selectedTimestamps}
+                onSelectTimestamp={handleCalendarDateClick}
                 selectedYearAndMonth={yearMonth}
-                selectableDateKeys={validDate}
-                onChangeYearAndMonth={handleChange}
+                selectableDateKeys={validDates}
+                onChangeYearAndMonth={handleCalendarMonthChange}
               />
             </div>
 
@@ -316,13 +278,13 @@ const ScheduleSection = ({
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-16-medium">
                     선택한 날짜
-                    {selectedDate.length > 0 && ` (${selectedDate.length}일)`}
+                    {selectedDates.length > 0 && ` (${selectedDates.length}일)`}
                   </p>
 
-                  {selectedDate.length > 0 && (
+                  {selectedDates.length > 0 && (
                     <button
                       type="button"
-                      onClick={handleReset}
+                      onClick={handleResetButtonClick}
                       className="text-14-medium text-gray-500 transition hover:text-gray-800"
                     >
                       초기화
@@ -330,14 +292,14 @@ const ScheduleSection = ({
                   )}
                 </div>
 
-                {selectedDate.length === 0 ? (
+                {selectedDates.length === 0 ? (
                   <p className="text-14-medium text-gray-400">
                     달력에서 날짜를 선택해주세요.
                   </p>
                 ) : (
                   <>
                     <ul className="flex flex-wrap gap-2">
-                      {selectedRange.map(({ start, end }) => {
+                      {selectedRanges.map(({ start, end }) => {
                         const label =
                           start === end
                             ? formatDisplayDate(start)
@@ -347,7 +309,7 @@ const ScheduleSection = ({
                           <li key={start}>
                             <button
                               type="button"
-                              onClick={() => handleRemove(start, end)}
+                              onClick={() => handleRangeRemove(start, end)}
                               className="text-14-medium bg-primary-100 text-primary-700 hover:bg-primary-500 flex items-center gap-1 rounded-full px-3 py-1.5 transition hover:text-white"
                               aria-label={`${label} 선택 해제`}
                             >
@@ -393,7 +355,7 @@ const ScheduleSection = ({
               <Button
                 variant="mainBlue"
                 type="button"
-                onClick={handleAdd}
+                onClick={handleAddButtonClick}
                 icon={<PlusIcon width={20} height={20} />}
                 className="text-16-bold h-12 justify-center gap-1 rounded-xl transition hover:brightness-95"
               >
@@ -404,13 +366,13 @@ const ScheduleSection = ({
             </div>
           </div>
 
-          {groupedSchedule.length > 0 && (
+          {groupedSchedules.length > 0 && (
             <div className="mt-5 flex flex-col gap-4">
               <p className="text-16-medium block">
                 등록된 스케줄 ({schedules.length}개)
               </p>
 
-              {groupedSchedule.map(({ date, daySchedule }) => (
+              {groupedSchedules.map(({ date, daySchedules }) => (
                 <div
                   key={date}
                   className="rounded-2xl border border-gray-100 p-4"
@@ -420,7 +382,7 @@ const ScheduleSection = ({
                   </p>
 
                   <ul className="flex flex-col gap-2">
-                    {daySchedule.map(({ index, scheduleItem }) => (
+                    {daySchedules.map(({ index, scheduleItem }) => (
                       <li
                         key={fields[index]?.id ?? index}
                         className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5"

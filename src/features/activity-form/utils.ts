@@ -1,4 +1,5 @@
 import { ActivityDetailResponse } from "@/features/activities/type";
+import { formatDateKey, parseDateKey } from "@/components/Reservation/utils";
 import { ActivityFormValues } from "./types";
 import { uploadActivityImage } from "./api";
 import { showToast } from "@/lib/utils/toast";
@@ -23,6 +24,50 @@ export const isTimeOverlap = (
   bStart: string,
   bEnd: string,
 ) => aStart < bEnd && aEnd > bStart;
+
+export const getNextDate = (date: string) => {
+  const targetDate = new Date(parseDateKey(date));
+  targetDate.setDate(targetDate.getDate() + 1);
+  return formatDateKey(targetDate.getTime());
+};
+
+export const getValidDates = () => {
+  const dates = new Set<string>();
+  const today = new Date();
+
+  for (let index = 0; index < 365; index++) {
+    const currentDate = new Date(today);
+    currentDate.setDate(today.getDate() + index);
+    dates.add(formatDateKey(currentDate.getTime()));
+  }
+
+  return dates;
+};
+
+export const getDateRange = (
+  from: string,
+  to: string,
+  validDates: Set<string>,
+) => {
+  const fromTime = parseDateKey(from);
+  const toTime = parseDateKey(to);
+
+  const min = Math.min(fromTime, toTime);
+  const max = Math.max(fromTime, toTime);
+
+  const dates: string[] = [];
+  const currentDate = new Date(min);
+
+  while (currentDate.getTime() <= max) {
+    const dateKey = formatDateKey(currentDate.getTime());
+    if (validDates.has(dateKey)) {
+      dates.push(dateKey);
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+};
 
 // 수정 시 기존 체험 상세 데이터를 폼 초기값으로 매핑
 export const defaultActivityFormValues = (

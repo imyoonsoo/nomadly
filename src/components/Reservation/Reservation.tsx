@@ -157,7 +157,7 @@ const Reservation = ({
       <div className="flex flex-col gap-2">
         <h3 className="text-16-bold text-gray-950">날짜</h3>
         <Calendar
-          selectedTimestamp={new Set([selectedTimestamp])}
+          selectedTimestamps={new Set([selectedTimestamp])}
           selectedYearAndMonth={selectedYearAndMonth}
           selectableDateKeys={selectableDateKeys}
           onSelectTimestamp={handleSelectTimestamp}

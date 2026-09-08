@@ -139,7 +139,7 @@ const TabletReservationPicker = ({
       <div className="flex gap-6 pb-4">
         <div className="flex-1">
           <Calendar
-            selectedTimestamp={new Set([selectedTimestamp])}
+            selectedTimestamps={new Set([selectedTimestamp])}
             selectedYearAndMonth={selectedYearAndMonth}
             selectableDateKeys={selectableDateKeys}
             onSelectTimestamp={handleSelectTimestamp}
