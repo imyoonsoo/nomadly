@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { PRIVACY_POLICY } from "@/constants/policy";
+
+export const metadata: Metadata = {
+  title: "개인정보처리방침",
+};
 
 const PrivacyPage = () => {
   const { version, title, description, updatedAt, sections } = PRIVACY_POLICY;

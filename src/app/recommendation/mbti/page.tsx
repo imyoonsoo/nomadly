@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { Back } from "@/constants/icons";
 import MbtiRecommendation from "@/features/recommendation/mbti/components/MbtiRecommendation";
-import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "MBTI 추천",
+};
 
 const MbtiRecommendationPage = () => {
   return (

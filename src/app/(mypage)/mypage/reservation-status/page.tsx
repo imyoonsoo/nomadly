@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import ReservationStatusPage from "@/features/reservation-status/components/ReservationStatusPage";
 import Title from "../../_components/Title";
+
+export const metadata: Metadata = {
+  title: "예약현황",
+};
 
 const Page = () => {
   return (
