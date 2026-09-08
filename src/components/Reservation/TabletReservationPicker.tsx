@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Skeleton from "@/components/Skeleton/Skeleton";
 import { Minus, Plus, Search } from "@/constants/icons";
-import Calendar from "./Calendar";
+import { Calendar } from "./Calendar";
 import type { TabletReservationPickerProps } from "./type";
 import useAvailableReservationSchedules from "@/hooks/useAvailableReservationSchedules";
 import {
@@ -139,7 +139,7 @@ const TabletReservationPicker = ({
       <div className="flex gap-6 pb-4">
         <div className="flex-1">
           <Calendar
-            selectedTimestamp={selectedTimestamp}
+            selectedTimestamps={new Set([selectedTimestamp])}
             selectedYearAndMonth={selectedYearAndMonth}
             selectableDateKeys={selectableDateKeys}
             onSelectTimestamp={handleSelectTimestamp}
