@@ -1,11 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import getProfileAction from "../actions/getProfileAction";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { getMyProfile } from "../api";
 
-const useGetProfile = () => {
-  return useQuery({
+export const useGetProfile = () => {
+  return useSuspenseQuery({
     queryKey: ["myProfile"],
-    queryFn: getProfileAction,
+    queryFn: getMyProfile,
   });
 };
-
-export default useGetProfile;

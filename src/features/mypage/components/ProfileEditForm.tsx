@@ -1,9 +1,10 @@
 "use client";
 
+import { Suspense, startTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { ProfileEditFormValues, MyProfileRequestBody } from "../type";
-import useGetProfile from "../hooks/useGetProfile";
+import { useGetProfile } from "../hooks/useGetProfile";
 import useUpdateProfile from "../hooks/useUpdateProfile";
 import useUploadProfileImage from "../hooks/useUploadProfileImage";
 import TextInput from "@/components/Input/TextInput";
@@ -12,6 +13,7 @@ import Button from "@/components/Button/Button";
 import Title from "@/app/(mypage)/_components/Title";
 import { showToast } from "@/lib/utils/toast";
 import { useRouter } from "next/navigation";
+import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import EmptyLoading from "@/assets/images/empty-loading.svg";
 
 const DEFAULT_ERROR_MESSAGE = "오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
@@ -27,8 +29,27 @@ const toErrorMessage = (error: unknown): string => {
   return STATUS_MESSAGES[status] ?? DEFAULT_ERROR_MESSAGE;
 };
 
-const ProfileEditForm = () => {
-  const { data: user, isLoading, isError, error } = useGetProfile();
+const ProfileSkeleton = () => (
+  <div className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:w-119 lg:w-160">
+    <div className="mb-3.25 flex animate-pulse flex-col gap-2.5 self-stretch md:mb-7.5">
+      <div className="h-5.5 w-16 rounded bg-gray-200" />
+      <div className="h-5 w-60 rounded bg-gray-200" />
+    </div>
+    <EmptyLoading width={180} height={180} />
+    <div className="flex animate-pulse flex-col items-center gap-6 self-stretch">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="flex flex-col gap-2.5 self-stretch">
+          <div className="h-6 w-14 rounded bg-gray-200" />
+          <div className="h-13.5 rounded-2xl bg-gray-200" />
+        </div>
+      ))}
+      <div className="h-11.75 w-full rounded-[14px] bg-gray-200" />
+    </div>
+  </div>
+);
+
+const ProfileEditFormContent = () => {
+  const { data: user } = useGetProfile();
   const { mutate: updateProfile, isPending: isProfileUpdating } =
     useUpdateProfile();
   const {
@@ -47,22 +68,20 @@ const ProfileEditForm = () => {
   } = useForm<ProfileEditFormValues>({
     mode: "onBlur",
     defaultValues: {
-      nickname: "",
-      email: "",
+      nickname: user.nickname,
+      email: user.email,
       newPassword: "",
       newPasswordConfirm: "",
     },
   });
 
   useEffect(() => {
-    if (user) {
-      reset({
-        nickname: user.nickname,
-        email: user.email,
-        newPassword: "",
-        newPasswordConfirm: "",
-      });
-    }
+    reset({
+      nickname: user.nickname,
+      email: user.email,
+      newPassword: "",
+      newPasswordConfirm: "",
+    });
   }, [user, reset]); // 유저 데이터가 캐싱되거나 새롭게 들어올 때마다 실행
 
   // watch는 안전하게 메모이제이션할 수 없어 컴포넌트 최적화 대상에서 제외된다는 공식 문서
@@ -82,7 +101,7 @@ const ProfileEditForm = () => {
 
       // 닉네임 변경 시
       // isDirty는 클릭 1번으로 변경을 true로 처리하는 문제로 !== 추가
-      if (data.nickname !== user?.nickname) {
+      if (data.nickname !== user.nickname) {
         updatedProfile.nickname = data.nickname;
       }
 
@@ -139,7 +158,9 @@ const ProfileEditForm = () => {
               `${changedItems.join(", ")} 변경이 완료되었습니다.`,
             );
           }
-          router.refresh();
+          startTransition(() => {
+            router.refresh();
+          });
         },
         onError: (error) => {
           showToast.error(toErrorMessage(error));
@@ -149,35 +170,6 @@ const ProfileEditForm = () => {
       showToast.error(toErrorMessage(error));
     }
   };
-
-  if (isLoading || !user) {
-    return (
-      <div className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:w-119 lg:w-160">
-        <div className="mb-3.25 flex animate-pulse flex-col gap-2.5 self-stretch md:mb-7.5">
-          <div className="h-5.5 w-16 rounded bg-gray-200" />
-          <div className="h-5 w-60 rounded bg-gray-200" />
-        </div>
-        <EmptyLoading width={180} height={180} />
-        <div className="flex animate-pulse flex-col items-center gap-6 self-stretch">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col gap-2.5 self-stretch">
-              <div className="h-6 w-14 rounded bg-gray-200" />
-              <div className="h-13.5 rounded-2xl bg-gray-200" />
-            </div>
-          ))}
-          <div className="h-11.75 w-full rounded-[14px] bg-gray-200" />
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center text-lg font-medium text-red-600 md:text-xl">
-        {toErrorMessage(error)}
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:w-119 lg:w-160">
@@ -284,4 +276,18 @@ const ProfileEditForm = () => {
   );
 };
 
-export default ProfileEditForm;
+export const ProfileEditForm = () => {
+  return (
+    <ErrorBoundary
+      fallback={({ error }) => (
+        <div className="flex min-h-[50vh] items-center justify-center text-lg font-medium text-red-600 md:text-xl">
+          {toErrorMessage(error)}
+        </div>
+      )}
+    >
+      <Suspense fallback={<ProfileSkeleton />}>
+        <ProfileEditFormContent />
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
