@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { Suspense, useState } from "react";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { myActivitiesInfiniteQuery } from "@/features/myActivities/queries";
 import { getSortedActivities } from "../utils";
@@ -12,22 +12,26 @@ import ActivitiesList from "./ActivitiesList";
 import EmptyCardList from "./EmptyCardList";
 import CardListSkeleton from "./CardListSkeleton";
 import Skeleton from "@/components/Skeleton/Skeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import NotFoundImage from "@/assets/images/empty-notFound.svg";
 
-const ActivitiesSection = () => {
+const ActivitiesSkeleton = () => (
+  <>
+    <Skeleton className="mr-auto mb-5 h-13.5 w-30 rounded-2xl md:w-36" />
+    <ActivityBanner count={0} isLoading />
+    <CardListSkeleton />
+  </>
+);
+
+const ActivitiesSectionContent = () => {
   const [currentSort, setCurrentSort] = useState<string | number>("latest");
-  const {
-    data,
-    isLoading,
-    isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery(
-    myActivitiesInfiniteQuery({
-      size: 10,
-    }),
-  );
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useSuspenseInfiniteQuery(
+      myActivitiesInfiniteQuery({
+        size: 10,
+      }),
+    );
 
   const { targetRef } = useInfiniteScroll({
     onIntersect: fetchNextPage,
@@ -35,28 +39,9 @@ const ActivitiesSection = () => {
     isLoading: isFetchingNextPage,
   });
 
-  if (isLoading) {
-    return (
-      <>
-        <Skeleton className="mr-auto mb-5 h-13.5 w-30 rounded-2xl md:w-36" />
-        <ActivityBanner count={0} isLoading />
-        <CardListSkeleton />
-      </>
-    );
-  }
-
-  if (isError) {
-    return (
-      <EmptyCardList
-        message="체험 목록을 불러오지 못했어요"
-        image={<NotFoundImage className="h-45.5 w-45.5" />}
-      />
-    );
-  }
-
-  const cards = data?.pages.flatMap((page) => page.activities) ?? [];
+  const cards = data.pages.flatMap((page) => page.activities);
   const sortedActivities = getSortedActivities(cards, currentSort);
-  const totalCount = data?.pages[0]?.totalCount ?? 0;
+  const totalCount = data.pages[0]?.totalCount ?? 0;
 
   if (totalCount === 0) {
     return <EmptyCardList />;
@@ -77,4 +62,19 @@ const ActivitiesSection = () => {
   );
 };
 
-export default ActivitiesSection;
+export const ActivitiesSection = () => {
+  return (
+    <ErrorBoundary
+      fallback={
+        <EmptyCardList
+          message="체험 목록을 불러오지 못했어요"
+          image={<NotFoundImage className="h-45.5 w-45.5" />}
+        />
+      }
+    >
+      <Suspense fallback={<ActivitiesSkeleton />}>
+        <ActivitiesSectionContent />
+      </Suspense>
+    </ErrorBoundary>
+  );
+};
