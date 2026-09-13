@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ReservationStatusPage from "@/features/reservation-status/components/ReservationStatusPage";
+import { ReservationStatusPage } from "@/features/reservation-status/components/ReservationClient";
 import Title from "../../_components/Title";
 
 export const metadata: Metadata = {

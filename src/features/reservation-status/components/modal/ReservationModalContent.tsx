@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { ReservationStatus } from "@/features/reservation-status/type";
 import ReservationStatusTab from "@/features/reservation-status/components/modal/ReservationStatusTab";
 import ReservationScheduleSelect from "@/features/reservation-status/components/modal/ReservationScheduleSelect";
@@ -8,10 +9,12 @@ import ReservationCard from "@/features/reservation-status/components/modal/Rese
 import { Delete } from "@/constants/icons";
 import { formatKoreanDate } from "@/features/reservation-status/utils";
 import {
-  useReservations,
-  useReservedSchedule,
-  useUpdateReservationStatus,
-} from "@/features/reservation-status/hooks/useReservationStatus";
+  reservationsQueryOptions,
+  reservedScheduleQueryOptions,
+} from "@/features/reservation-status/queries/query";
+import { useUpdateReservationStatus } from "@/features/reservation-status/hooks/useReservationStatus";
+import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
+import { ModalSkeleton, CardsSkeleton } from "./ModalSkeleton";
 
 interface ReservationModalContentProps {
   selectedDate: string;
@@ -20,42 +23,20 @@ interface ReservationModalContentProps {
   isFullPage?: boolean;
 }
 
-const ReservationModalContent = ({
-  selectedDate,
+interface ReservationsSectionProps {
+  activityId: number;
+  scheduleId: number;
+  status: ReservationStatus;
+  isFullPage: boolean;
+}
+
+const ReservationsSection = ({
   activityId,
-  onClose,
-  isFullPage = false,
-}: ReservationModalContentProps) => {
-  const [selectedStatus, setSelectedStatus] =
-    useState<ReservationStatus>("pending");
-
-  const [selectedScheduleId, setSelectedScheduleId] = useState(0);
+  scheduleId,
+  status,
+  isFullPage,
+}: ReservationsSectionProps) => {
   const [isTablet, setIsTablet] = useState(false);
-
-  const {
-    data: schedules = [],
-    isLoading: isSchedulesLoading,
-    isError: isSchedulesError,
-  } = useReservedSchedule(activityId, selectedDate);
-
-  useEffect(() => {
-    setSelectedScheduleId(schedules[0]?.scheduleId ?? 0);
-    setSelectedStatus("pending");
-  }, [schedules]);
-
-  const selectedSchedule = schedules.find(
-    (schedule) => schedule.scheduleId === selectedScheduleId,
-  );
-
-  const {
-    data: reservationsData,
-    isLoading: isReservationsLoading,
-    isError: isReservationsError,
-  } = useReservations(activityId, selectedScheduleId, selectedStatus);
-
-  const updateReservationStatusMutation = useUpdateReservationStatus();
-
-  const reservations = reservationsData?.reservations ?? [];
 
   useEffect(() => {
     const checkTablet = () => {
@@ -72,11 +53,20 @@ const ReservationModalContent = ({
 
   const loadSize = isFullPage || isTablet ? 3 : 2;
   const [visibleCount, setVisibleCount] = useState(loadSize);
+  const [prevLoadSize, setPrevLoadSize] = useState(loadSize);
 
-  useEffect(() => {
+  if (loadSize !== prevLoadSize) {
+    setPrevLoadSize(loadSize);
     setVisibleCount(loadSize);
-  }, [selectedDate, selectedScheduleId, selectedStatus, loadSize]);
+  }
 
+  const { data } = useSuspenseQuery(
+    reservationsQueryOptions(activityId, scheduleId, status),
+  );
+
+  const updateReservationStatusMutation = useUpdateReservationStatus();
+
+  const reservations = data.reservations;
   const visibleReservations = reservations.slice(0, visibleCount);
   const hasMore = visibleCount < reservations.length;
 
@@ -109,91 +99,63 @@ const ReservationModalContent = ({
     });
   };
 
-  const header = (
-    <div className="flex items-center justify-between">
-      <h2 className="text-20-bold text-black">
-        {formatKoreanDate(selectedDate)}
-      </h2>
+  return (
+    <div
+      onScroll={handleScrollReservationList}
+      className={`scrollbar-hide h-60 overflow-y-auto pr-1 md:h-[min(350px,calc(85vh-280px))] xl:h-57.5 ${
+        isFullPage
+          ? "h-[calc(100vh-300px)] md:h-[calc(100vh-320px)] xl:h-57.5"
+          : ""
+      } `}
+    >
+      <div className="flex flex-col gap-3">
+        {visibleReservations.map((reservation) => (
+          <ReservationCard
+            key={reservation.id}
+            reservation={reservation}
+            status={status}
+            onApprove={handleApprove}
+            onDecline={handleDecline}
+          />
+        ))}
+      </div>
 
-      <button type="button" onClick={onClose}>
-        <Delete className="h-6 w-6 hover:translate-y-0.5" />
-      </button>
+      {hasMore && (
+        <div className="text-10-medium md:text-14-medium py-3 text-center text-gray-400">
+          더 불러오는 중...
+        </div>
+      )}
     </div>
   );
+};
 
-  if (isSchedulesLoading) {
-    return (
-      <>
-        {header}
+interface ReservationScheduleSectionProps {
+  activityId: number;
+  selectedDate: string;
+  isFullPage: boolean;
+}
 
-        <div className="text-14-medium mt-6 text-gray-400">
-          예약 시간을 불러오는 중...
-        </div>
-      </>
-    );
-  }
+const ReservationScheduleSection = ({
+  activityId,
+  selectedDate,
+  isFullPage,
+}: ReservationScheduleSectionProps) => {
+  const { data: schedules } = useSuspenseQuery(
+    reservedScheduleQueryOptions(activityId, selectedDate),
+  );
 
-  if (isSchedulesError) {
-    return (
-      <>
-        {header}
+  const [selectedScheduleId, setSelectedScheduleId] = useState(
+    schedules[0]?.scheduleId ?? 0,
+  );
+  const [selectedStatus, setSelectedStatus] =
+    useState<ReservationStatus>("pending");
 
-        <div className="text-14-medium mt-6 text-red-500">
-          예약 시간을 불러오지 못했습니다.
-        </div>
-      </>
-    );
-  }
-
-  let reservationContent;
-
-  if (isReservationsLoading) {
-    reservationContent = (
-      <div className="text-14-medium text-gray-400">
-        예약 내역을 불러오는 중...
-      </div>
-    );
-  } else if (isReservationsError) {
-    reservationContent = (
-      <div className="text-14-medium text-gray-400">
-        예약 내역을 불러오지 못했습니다.
-      </div>
-    );
-  } else {
-    reservationContent = (
-      <div
-        onScroll={handleScrollReservationList}
-        className={`scrollbar-hide h-60 overflow-y-auto pr-1 md:h-[min(350px,calc(85vh-280px))] xl:h-57.5 ${
-          isFullPage
-            ? "h-[calc(100vh-300px)] md:h-[calc(100vh-320px)] xl:h-57.5"
-            : ""
-        } `}
-      >
-        <div className="flex flex-col gap-3">
-          {visibleReservations.map((reservation) => (
-            <ReservationCard
-              key={reservation.id}
-              reservation={reservation}
-              status={selectedStatus}
-              onApprove={handleApprove}
-              onDecline={handleDecline}
-            />
-          ))}
-        </div>
-
-        {hasMore && (
-          <div className="text-10-medium md:text-14-medium py-3 text-center text-gray-400">
-            더 불러오는 중...
-          </div>
-        )}
-      </div>
-    );
-  }
+  const selectedSchedule = schedules.find(
+    (schedule) => schedule.scheduleId === selectedScheduleId,
+  );
 
   return (
     <>
-      {header}
-
       <ReservationStatusTab
         selectedStatus={selectedStatus}
         onChangeStatus={setSelectedStatus}
@@ -219,10 +181,64 @@ const ReservationModalContent = ({
       <div className="mt-6">
         <p className="text-16-bold mb-3 text-black">예약 내역</p>
 
-        {reservationContent}
+        {selectedScheduleId > 0 && (
+          <ErrorBoundary
+            key={`${selectedScheduleId}-${selectedStatus}`}
+            fallback={
+              <div className="text-14-medium text-gray-400">
+                예약 내역을 불러오지 못했습니다.
+              </div>
+            }
+          >
+            <Suspense fallback={<CardsSkeleton />}>
+              <ReservationsSection
+                activityId={activityId}
+                scheduleId={selectedScheduleId}
+                status={selectedStatus}
+                isFullPage={isFullPage}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        )}
       </div>
     </>
   );
 };
 
-export default ReservationModalContent;
+export const ReservationModalContent = ({
+  selectedDate,
+  activityId,
+  onClose,
+  isFullPage = false,
+}: ReservationModalContentProps) => {
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-20-bold text-black">
+          {formatKoreanDate(selectedDate)}
+        </h2>
+
+        <button type="button" onClick={onClose}>
+          <Delete className="h-6 w-6 hover:translate-y-0.5" />
+        </button>
+      </div>
+
+      <ErrorBoundary
+        key={`${activityId}-${selectedDate}`}
+        fallback={
+          <div className="text-14-medium mt-6 text-red-500">
+            예약 시간을 불러오지 못했습니다.
+          </div>
+        }
+      >
+        <Suspense fallback={<ModalSkeleton />}>
+          <ReservationScheduleSection
+            activityId={activityId}
+            selectedDate={selectedDate}
+            isFullPage={isFullPage}
+          />
+        </Suspense>
+      </ErrorBoundary>
+    </>
+  );
+};

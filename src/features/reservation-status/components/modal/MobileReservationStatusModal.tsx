@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import ReservationModalContent from "@/features/reservation-status/components/modal/ReservationModalContent";
+import { ReservationModalContent } from "@/features/reservation-status/components/modal/ReservationModalContent";
 
 interface MobileReservationStatusModalProps {
   selectedDate: string;
