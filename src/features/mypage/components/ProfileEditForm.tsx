@@ -30,20 +30,26 @@ const toErrorMessage = (error: unknown): string => {
 };
 
 const ProfileSkeleton = () => (
-  <div className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:w-119 lg:w-160">
-    <div className="mb-3.25 flex animate-pulse flex-col gap-2.5 self-stretch md:mb-7.5">
-      <div className="h-5.5 w-16 rounded bg-gray-200" />
-      <div className="h-5 w-60 rounded bg-gray-200" />
-    </div>
-    <EmptyLoading width={180} height={180} />
-    <div className="flex animate-pulse flex-col items-center gap-6 self-stretch">
-      {[...Array(4)].map((_, i) => (
-        <div key={i} className="flex flex-col gap-2.5 self-stretch">
-          <div className="h-6 w-14 rounded bg-gray-200" />
-          <div className="h-13.5 rounded-2xl bg-gray-200" />
-        </div>
-      ))}
-      <div className="h-11.75 w-full rounded-[14px] bg-gray-200" />
+  <div role="status" aria-live="polite">
+    <span className="sr-only">내 정보를 불러오는 중입니다</span>
+    <div
+      aria-hidden="true"
+      className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:w-119 lg:w-160"
+    >
+      <div className="mb-3.25 flex animate-pulse flex-col gap-2.5 self-stretch md:mb-7.5">
+        <div className="h-5.5 w-16 rounded bg-gray-200" />
+        <div className="h-5 w-60 rounded bg-gray-200" />
+      </div>
+      <EmptyLoading width={180} height={180} />
+      <div className="flex animate-pulse flex-col items-center gap-6 self-stretch">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="flex flex-col gap-2.5 self-stretch">
+            <div className="h-6 w-14 rounded bg-gray-200" />
+            <div className="h-13.5 rounded-2xl bg-gray-200" />
+          </div>
+        ))}
+        <div className="h-11.75 w-full rounded-[14px] bg-gray-200" />
+      </div>
     </div>
   </div>
 );
@@ -279,9 +285,16 @@ const ProfileEditFormContent = () => {
 export const ProfileEditForm = () => {
   return (
     <ErrorBoundary
-      fallback={({ error }) => (
-        <div className="flex min-h-[50vh] items-center justify-center text-lg font-medium text-red-600 md:text-xl">
+      fallback={({ error, reset }) => (
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-lg font-medium text-red-600 md:text-xl">
           {toErrorMessage(error)}
+          <button
+            type="button"
+            onClick={reset}
+            className="text-14-medium underline"
+          >
+            다시 시도하기
+          </button>
         </div>
       )}
     >

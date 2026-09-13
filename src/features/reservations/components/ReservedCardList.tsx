@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useTransition } from "react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import FilterButton from "@/components/FilterButton/FilterButton";
@@ -38,7 +38,15 @@ const sortReservations = (reservations: Reservation[]) => {
   return sortedReservations;
 };
 
-const ReservedCardListEmpty = ({ message }: { message: string }) => {
+interface ReservedCardListEmptyProps {
+  message: string;
+  action?: React.ReactNode;
+}
+
+const ReservedCardListEmpty = ({
+  message,
+  action,
+}: ReservedCardListEmptyProps) => {
   const router = useRouter();
 
   return (
@@ -47,20 +55,23 @@ const ReservedCardListEmpty = ({ message }: { message: string }) => {
         <EmptyIcon width={180} height={203} />
         <p>{message}</p>
       </div>
-      <Button
-        variant="mainBlue"
-        height="custom"
-        className="text-16-bold h-13.5 w-45.5 rounded-2xl"
-        onClick={() => router.push("/")}
-      >
-        둘러보기
-      </Button>
+      {action ?? (
+        <Button
+          variant="mainBlue"
+          height="custom"
+          className="text-16-bold h-13.5 w-45.5 rounded-2xl"
+          onClick={() => router.push("/")}
+        >
+          둘러보기
+        </Button>
+      )}
     </div>
   );
 };
 
 const ReservedCardListContent = () => {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   const activeStatus = activeFilter
     ? FILTER_STATUS_MAP[activeFilter]
@@ -79,7 +90,9 @@ const ReservedCardListContent = () => {
   });
 
   const handleFilterButtonClick = (filter: string) => {
-    setActiveFilter((prev) => (prev === filter ? null : filter));
+    startTransition(() => {
+      setActiveFilter((prev) => (prev === filter ? null : filter));
+    });
   };
 
   const reservations = sortReservations(
@@ -117,9 +130,20 @@ const ReservedCardListContent = () => {
 export const ReservedCardList = () => {
   return (
     <ErrorBoundary
-      fallback={
-        <ReservedCardListEmpty message="예약 목록을 불러오지 못했어요" />
-      }
+      fallback={({ reset }) => (
+        <ReservedCardListEmpty
+          message="예약 목록을 불러오지 못했어요"
+          action={
+            <button
+              type="button"
+              onClick={reset}
+              className="text-14-medium text-primary-500 underline"
+            >
+              다시 시도하기
+            </button>
+          }
+        />
+      )}
     >
       <Suspense fallback={<ReservedCardListSkeleton />}>
         <ReservedCardListContent />

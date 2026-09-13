@@ -24,12 +24,15 @@ const getCurrentYearMonth = () => {
 };
 
 const ReservationPageSkeleton = () => (
-  <>
-    <div className="max-w-160 pb-4.5 md:pb-6 xl:pb-7.5">
+  <div role="status" aria-live="polite">
+    <span className="sr-only">예약 현황을 불러오는 중입니다</span>
+    <div aria-hidden="true" className="max-w-160 pb-4.5 md:pb-6 xl:pb-7.5">
       <Skeleton className="h-13.5 w-full rounded-2xl" />
     </div>
-    <CalendarSkeleton />
-  </>
+    <div aria-hidden="true">
+      <CalendarSkeleton />
+    </div>
+  </div>
 );
 
 interface ReservationDashboardProps {
@@ -99,12 +102,21 @@ const ReservationStatusContent = () => {
       </div>
 
       <ErrorBoundary
-        fallback={
+        fallback={({ reset }) => (
           <EmptyReservationStatus
             image={<Error className="h-45.5 w-45.5" />}
             message="예약 현황을 불러오지 못했습니다."
+            action={
+              <button
+                type="button"
+                onClick={reset}
+                className="text-14-medium text-primary-500 mt-2 underline"
+              >
+                다시 시도하기
+              </button>
+            }
           />
-        }
+        )}
       >
         <Suspense fallback={<CalendarSkeleton />}>
           <ReservationDashboard
@@ -131,12 +143,21 @@ export const ReservationPage = () => {
   return (
     <section className="w-full max-w-200">
       <ErrorBoundary
-        fallback={
+        fallback={({ reset }) => (
           <EmptyReservationStatus
             image={<Error className="h-45.5 w-45.5" />}
             message="체험 목록을 불러오지 못했습니다."
+            action={
+              <button
+                type="button"
+                onClick={reset}
+                className="text-14-medium text-primary-500 mt-2 underline"
+              >
+                다시 시도하기
+              </button>
+            }
           />
-        }
+        )}
       >
         <Suspense fallback={<ReservationPageSkeleton />}>
           <ReservationStatusContent />

@@ -16,11 +16,14 @@ import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import NotFoundImage from "@/assets/images/empty-notFound.svg";
 
 const ActivitiesSkeleton = () => (
-  <>
-    <Skeleton className="mr-auto mb-5 h-13.5 w-30 rounded-2xl md:w-36" />
-    <ActivityBanner count={0} isLoading />
-    <CardListSkeleton />
-  </>
+  <div role="status" aria-live="polite">
+    <span className="sr-only">체험 목록을 불러오는 중입니다</span>
+    <div aria-hidden="true">
+      <Skeleton className="mr-auto mb-5 h-13.5 w-30 rounded-2xl md:w-36" />
+      <ActivityBanner count={0} isLoading />
+      <CardListSkeleton />
+    </div>
+  </div>
 );
 
 const ActivitiesSectionContent = () => {
@@ -65,12 +68,21 @@ const ActivitiesSectionContent = () => {
 export const ActivitiesSection = () => {
   return (
     <ErrorBoundary
-      fallback={
+      fallback={({ reset }) => (
         <EmptyCardList
           message="체험 목록을 불러오지 못했어요"
           image={<NotFoundImage className="h-45.5 w-45.5" />}
+          action={
+            <button
+              type="button"
+              onClick={reset}
+              className="text-14-medium text-primary-500 mt-2 underline"
+            >
+              다시 시도하기
+            </button>
+          }
         />
-      }
+      )}
     >
       <Suspense fallback={<ActivitiesSkeleton />}>
         <ActivitiesSectionContent />

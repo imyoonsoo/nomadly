@@ -184,11 +184,18 @@ const ReservationScheduleSection = ({
         {selectedScheduleId > 0 && (
           <ErrorBoundary
             key={`${selectedScheduleId}-${selectedStatus}`}
-            fallback={
-              <div className="text-14-medium text-gray-400">
+            fallback={({ reset }) => (
+              <div className="text-14-medium flex items-center gap-3 text-gray-400">
                 예약 내역을 불러오지 못했습니다.
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="text-primary-500 underline"
+                >
+                  다시 시도하기
+                </button>
               </div>
-            }
+            )}
           >
             <Suspense fallback={<CardsSkeleton />}>
               <ReservationsSection
@@ -225,11 +232,14 @@ export const ReservationModalContent = ({
 
       <ErrorBoundary
         key={`${activityId}-${selectedDate}`}
-        fallback={
-          <div className="text-14-medium mt-6 text-red-500">
+        fallback={({ reset }) => (
+          <div className="text-14-medium mt-6 flex items-center gap-3 text-red-500">
             예약 시간을 불러오지 못했습니다.
+            <button type="button" onClick={reset} className="underline">
+              다시 시도하기
+            </button>
           </div>
-        }
+        )}
       >
         <Suspense fallback={<ModalSkeleton />}>
           <ReservationScheduleSection
