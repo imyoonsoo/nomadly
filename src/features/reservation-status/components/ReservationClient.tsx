@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-export const ReservationStatusPage = dynamic(
-  () =>
-    import("./ReservationStatusPage").then((data) => data.ReservationStatusPage),
+export const ReservationPage = dynamic(
+  () => import("./ReservationPage").then((data) => data.ReservationPage),
   { ssr: false },
 );

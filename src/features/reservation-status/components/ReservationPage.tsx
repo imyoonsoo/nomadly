@@ -23,7 +23,7 @@ const getCurrentYearMonth = () => {
   };
 };
 
-const ReservationStatusPageSkeleton = () => (
+const ReservationPageSkeleton = () => (
   <>
     <div className="max-w-160 pb-4.5 md:pb-6 xl:pb-7.5">
       <Skeleton className="h-13.5 w-full rounded-2xl" />
@@ -61,9 +61,7 @@ const ReservationDashboard = ({
 };
 
 const ReservationStatusContent = () => {
-  const { data: activitiesData } = useSuspenseQuery(
-    myActivitiesQueryOptions(),
-  );
+  const { data: activitiesData } = useSuspenseQuery(myActivitiesQueryOptions());
   const activities = activitiesData.activities;
 
   const [selectedActivityId, setSelectedActivityId] = useState(
@@ -129,7 +127,7 @@ const ReservationStatusContent = () => {
   );
 };
 
-export const ReservationStatusPage = () => {
+export const ReservationPage = () => {
   return (
     <section className="w-full max-w-200">
       <ErrorBoundary
@@ -140,7 +138,7 @@ export const ReservationStatusPage = () => {
           />
         }
       >
-        <Suspense fallback={<ReservationStatusPageSkeleton />}>
+        <Suspense fallback={<ReservationPageSkeleton />}>
           <ReservationStatusContent />
         </Suspense>
       </ErrorBoundary>
