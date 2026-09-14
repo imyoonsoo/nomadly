@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { House } from "@/constants/icons";
+
+export const metadata: Metadata = {
+  title: "미니게임",
+};
 
 const GAME_LIST = [
   {
