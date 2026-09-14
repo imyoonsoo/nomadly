@@ -11,29 +11,35 @@ export const CardSkeleton = () => (
 );
 
 export const CardsSkeleton = () => (
-  <div className="flex flex-col gap-3">
-    {Array.from({ length: 2 }).map((_, i) => (
-      <CardSkeleton key={i} />
-    ))}
+  <div role="status" aria-live="polite">
+    <span className="sr-only">예약 내역을 불러오는 중입니다</span>
+    <div aria-hidden="true" className="flex flex-col gap-3">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <CardSkeleton key={i} />
+      ))}
+    </div>
   </div>
 );
 
 export const ModalSkeleton = () => (
-  <>
-    <div className="mt-4 grid grid-cols-3 gap-4 border-b border-gray-300 pb-3">
-      <Skeleton className="h-5 w-full" />
-      <Skeleton className="h-5 w-full" />
-      <Skeleton className="h-5 w-full" />
-    </div>
+  <div role="status" aria-live="polite">
+    <span className="sr-only">예약 관리 정보를 불러오는 중입니다</span>
+    <div aria-hidden="true">
+      <div className="mt-4 grid grid-cols-3 gap-4 border-b border-gray-300 pb-3">
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+      </div>
 
-    <div className="mt-6">
-      <Skeleton className="mb-3 h-5 w-16" />
-      <Skeleton className="h-13.5 w-full rounded-2xl" />
-    </div>
+      <div className="mt-6">
+        <Skeleton className="mb-3 h-5 w-16" />
+        <Skeleton className="h-13.5 w-full rounded-2xl" />
+      </div>
 
-    <div className="mt-6">
-      <Skeleton className="mb-3 h-5 w-16" />
-      <CardsSkeleton />
+      <div className="mt-6">
+        <Skeleton className="mb-3 h-5 w-16" />
+        <CardsSkeleton />
+      </div>
     </div>
-  </>
+  </div>
 );
