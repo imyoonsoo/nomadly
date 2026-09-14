@@ -10,7 +10,7 @@ import { AltLeft } from "@/constants/icons";
 import { AltRight } from "@/constants/icons";
 import CalendarCell from "@/features/reservation-status/components/CalendarCell";
 
-const WEEK_DAYS = ["S", "M", "T", "W", "T", "F", "S"];
+const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 interface ReservationCalendarProps {
   reservations: ReservationDashboardItem[];

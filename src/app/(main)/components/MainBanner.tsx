@@ -10,19 +10,8 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 import { NoImg } from "@/constants/images";
 
-const MainBanner = ({ items, isLoading }: CardListProps) => {
+const MainBanner = ({ items }: CardListProps) => {
   const swiperRef = useRef<SwiperType | null>(null);
-  if (isLoading) {
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        className="aspect-[1/0.6] w-full animate-pulse rounded-3xl bg-gray-200 md:aspect-[1/0.5]"
-      >
-        <span className="sr-only">배너를 불러오는 중입니다</span>
-      </div>
-    );
-  }
   if (items.length === 0) {
     return null;
   }

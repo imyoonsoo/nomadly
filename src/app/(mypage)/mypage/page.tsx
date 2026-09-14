@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ProfileEditForm from "@/features/mypage/components/ProfileEditForm";
+import { ProfileEditForm } from "@/features/mypage/components/ProfileClient";
 
 export const metadata: Metadata = {
   title: "마이페이지",
