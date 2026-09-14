@@ -8,9 +8,13 @@ const Footer = () => {
   return (
     <footer className="flex w-full flex-col items-center justify-center gap-5 border-t border-gray-100 bg-white px-6 py-7.5 md:flex-row md:justify-between md:self-stretch md:px-10 md:py-15 lg:px-50">
       <div className="text-13-medium order-0 flex w-38.5 items-center justify-between text-gray-600 md:order-1">
-        <Link href="/policy/privacy">Privacy Policy</Link>
+        <Link href="/policy/privacy" prefetch={false}>
+          Privacy Policy
+        </Link>
         <span>·</span>
-        <Link href="/policy/faq">FAQ</Link>
+        <Link href="/policy/faq" prefetch={false}>
+          FAQ
+        </Link>
       </div>
       <div className="flex items-center justify-between self-stretch md:contents">
         <div className="text-13-medium text-gray-400 md:order-0">

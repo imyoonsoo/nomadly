@@ -62,6 +62,7 @@ const Header = ({ user }: HeaderProps) => {
         <nav className="flex items-center gap-4 md:gap-6">
           <Link
             href="/recommendation"
+            prefetch={false}
             className="flex items-center justify-center transition-transform hover:scale-115 active:scale-100"
             aria-label="추천 페이지"
           >
@@ -70,6 +71,7 @@ const Header = ({ user }: HeaderProps) => {
 
           <Link
             href="/game"
+            prefetch={false}
             className="flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
             aria-label="게임 페이지"
           >

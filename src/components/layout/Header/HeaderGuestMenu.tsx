@@ -20,7 +20,9 @@ const HeaderGuestMenu = () => {
           key={href}
           className="text-14-medium hover:text-primary-500 rounded px-3 py-2 text-gray-950 transition active:scale-95 active:opacity-70 md:px-4 md:py-3"
         >
-          <Link href={href}>{text}</Link>
+          <Link href={href} prefetch={false}>
+            {text}
+          </Link>
         </li>
       ))}
     </ul>
