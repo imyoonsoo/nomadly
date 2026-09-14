@@ -150,8 +150,15 @@ const ReservationScheduleSection = ({
   const [selectedStatus, setSelectedStatus] =
     useState<ReservationStatus>("pending");
 
-  const selectedSchedule = schedules.find(
+  const isSelectedScheduleValid = schedules.some(
     (schedule) => schedule.scheduleId === selectedScheduleId,
+  );
+  const effectiveScheduleId = isSelectedScheduleValid
+    ? selectedScheduleId
+    : (schedules[0]?.scheduleId ?? 0);
+
+  const selectedSchedule = schedules.find(
+    (schedule) => schedule.scheduleId === effectiveScheduleId,
   );
 
   return (
@@ -173,7 +180,7 @@ const ReservationScheduleSection = ({
 
         <ReservationScheduleSelect
           schedules={schedules}
-          selectedScheduleId={selectedScheduleId}
+          selectedScheduleId={effectiveScheduleId}
           onChangeScheduleId={setSelectedScheduleId}
         />
       </div>
@@ -181,9 +188,9 @@ const ReservationScheduleSection = ({
       <div className="mt-6">
         <p className="text-16-bold mb-3 text-black">예약 내역</p>
 
-        {selectedScheduleId > 0 && (
+        {effectiveScheduleId > 0 && (
           <ErrorBoundary
-            key={`${selectedScheduleId}-${selectedStatus}`}
+            key={`${effectiveScheduleId}-${selectedStatus}`}
             fallback={({ reset }) => (
               <div className="text-14-medium flex items-center gap-3 text-gray-400">
                 예약 내역을 불러오지 못했습니다.
@@ -200,7 +207,7 @@ const ReservationScheduleSection = ({
             <Suspense fallback={<CardsSkeleton />}>
               <ReservationsSection
                 activityId={activityId}
-                scheduleId={selectedScheduleId}
+                scheduleId={effectiveScheduleId}
                 status={selectedStatus}
                 isFullPage={isFullPage}
               />

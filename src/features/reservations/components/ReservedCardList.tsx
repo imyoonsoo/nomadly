@@ -71,7 +71,7 @@ const ReservedCardListEmpty = ({
 
 const ReservedCardListContent = () => {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const activeStatus = activeFilter
     ? FILTER_STATUS_MAP[activeFilter]
@@ -116,7 +116,9 @@ const ReservedCardListContent = () => {
           </FilterButton>
         ))}
       </div>
-      <div className="flex flex-col gap-7.5">
+      <div
+        className={`flex flex-col gap-7.5 transition-opacity ${isPending ? "opacity-60" : ""}`}
+      >
         {reservations.map((reservation) => (
           <ReservedCard key={reservation.id} reservation={reservation} />
         ))}

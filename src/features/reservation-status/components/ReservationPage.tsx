@@ -72,7 +72,7 @@ const ReservationStatusContent = () => {
   );
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [{ year, month }, setYearMonth] = useState(getCurrentYearMonth);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   if (activities.length === 0) {
     return <EmptyReservationStatus message="아직 등록한 체험이 없어요" />;
@@ -93,7 +93,9 @@ const ReservationStatusContent = () => {
 
   return (
     <>
-      <div className="max-w-160 pb-4.5 md:pb-6 xl:pb-7.5">
+      <div
+        className={`max-w-160 pb-4.5 transition-opacity md:pb-6 xl:pb-7.5 ${isPending ? "opacity-60" : ""}`}
+      >
         <SelectDropdown
           options={activityOptions}
           selectedValue={selectedActivityId}
@@ -119,13 +121,17 @@ const ReservationStatusContent = () => {
         )}
       >
         <Suspense fallback={<CalendarSkeleton />}>
-          <ReservationDashboard
-            activityId={selectedActivityId}
-            year={year}
-            month={month}
-            onDateClick={setSelectedDate}
-            onChangeMonth={handleChangeMonth}
-          />
+          <div
+            className={`transition-opacity ${isPending ? "opacity-60" : ""}`}
+          >
+            <ReservationDashboard
+              activityId={selectedActivityId}
+              year={year}
+              month={month}
+              onDateClick={setSelectedDate}
+              onChangeMonth={handleChangeMonth}
+            />
+          </div>
         </Suspense>
       </ErrorBoundary>
 
