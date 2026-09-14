@@ -3,7 +3,7 @@ import Link from "next/link";
 import { House } from "@/constants/icons";
 
 export const metadata: Metadata = {
-  title: "체험 추천",
+  title: "추천체험",
 };
 
 const RECOMMENDATION_LIST = [
