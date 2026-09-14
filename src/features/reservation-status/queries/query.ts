@@ -53,8 +53,6 @@ export const reservationDashboardQueryOptions = (
   queryOptions({
     queryKey: reservationStatusKeys.dashboard(activityId, year, month),
     queryFn: () => getReservationDashboard({ activityId, year, month }),
-    enabled: activityId > 0,
-    placeholderData: (previousData) => previousData,
   });
 
 export const reservedScheduleQueryOptions = (
@@ -68,7 +66,6 @@ export const reservedScheduleQueryOptions = (
         activityId,
         date: date as string,
       }),
-    enabled: activityId > 0 && !!date,
   });
 
 export const reservationsQueryOptions = (
@@ -88,5 +85,4 @@ export const reservationsQueryOptions = (
         scheduleId,
         status,
       }),
-    enabled: activityId > 0 && scheduleId > 0,
   });

@@ -1,19 +1,19 @@
 import MobileReservationStatusModal from "@/features/reservation-status/components/modal/MobileReservationStatusModal";
 import PcReservationStatusModal from "@/features/reservation-status/components/modal/PcReservationStatusModal";
 
-interface ReservationStatusModalProps {
+interface ReservationModalProps {
   open: boolean;
   activityId: number;
   selectedDate: string | null;
   onClose: () => void;
 }
 
-const ReservationStatusModal = ({
+export const ReservationModal = ({
   open,
   activityId,
   selectedDate,
   onClose,
-}: ReservationStatusModalProps) => {
+}: ReservationModalProps) => {
   if (!open || !selectedDate) {
     return null;
   }
@@ -34,5 +34,3 @@ const ReservationStatusModal = ({
     </>
   );
 };
-
-export default ReservationStatusModal;

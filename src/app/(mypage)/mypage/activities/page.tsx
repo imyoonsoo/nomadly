@@ -1,8 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Title from "@/app/(mypage)/_components/Title";
-import ActivitiesSection from "@/features/myActivities/components/ActivitiesSection";
+
+const ActivitiesSection = dynamic(
+  () =>
+    import("@/features/myActivities/components/ActivitiesSection").then(
+      (data) => data.ActivitiesSection,
+    ),
+  { ssr: false },
+);
 
 const Activities = () => {
   const router = useRouter();
